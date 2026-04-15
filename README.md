@@ -1,11 +1,11 @@
 # 📖 Mistral OCR DARAH V1.0 — معالج الوثائق العربية
 
-> **Mistral OCR DARAH V1.0** نظام ويب متكامل لاستخراج النصوص من ملفات PDF باستخدام تقنية الذكاء الاصطناعي **Mistral OCR AI**.  
+> **Mistral OCR DARAH V1.0** نظام ويب متكامل لاستخراج النصوص من ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON باستخدام تقنية الذكاء الاصطناعي **Mistral OCR AI**.  
 > يتميّز بواجهة عربية احترافية تدعم **المعالجة الدفعية** لعدد غير محدود من الملفات مع عرض النتائج فورياً في المتصفح دون الحاجة لأي برنامج خارجي.
 
 ### حول النظام
 
-يُعالج النظام ملفات PDF المُدخَلة صفحةً بصفحة عبر نموذج `mistral-ocr-latest`، ويُعيد النص المستخرج بصيغة Markdown منسَّقة قابلة للنسخ والتعديل المباشر. تمّ تصميم المعمارية لتكون قابلة للتطوير؛ إذ يمكن استبدال موفّر الـ OCR أو إضافة خطوات ما بعد المعالجة (تصحيح إملائي — ترجمة — تصدير DOCX) بأدنى تعديل في طبقة `docconv.py`، فضلاً عن إمكانية ربط النظام بقواعد بيانات أو واجهات API خارجية لأتمتة سير العمل.
+يُعالج النظام ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON المُدخَلة صفحةً بصفحة عبر نموذج `mistral-ocr-latest`، ويُعيد النص المستخرج بصيغة Markdown منسَّقة قابلة للنسخ والتعديل المباشر. تمّ تصميم المعمارية لتكون قابلة للتطوير؛ إذ يمكن استبدال موفّر الـ OCR أو إضافة خطوات ما بعد المعالجة (تصحيح إملائي — ترجمة — تصدير DOCX) بأدنى تعديل في طبقة `docconv.py`، فضلاً عن إمكانية ربط النظام بقواعد بيانات أو واجهات API خارجية لأتمتة سير العمل.
 
 ---
 
@@ -15,7 +15,15 @@
   <tr>
     <td align="center">
       <img src="screenshots/1.png" alt="الصفحة الرئيسية — منطقة الرفع" width="460"/><br/>
-      <sub><b>① الصفحة الرئيسية</b> — منطقة السحب والإفلات لرفع ملفات PDF</sub>
+      <sub><b>① الصفحة الرئيسية</b> — منطقة السحب والإفلات لرفع ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON</sub>
+    </td>
+	  <td align="center">
+      <img src="screenshots/7.png" alt="الصفحة الرئيسية — منطقة الرفع" width="460"/><br/>
+      <sub><b>① الصفحة الرئيسية</b> — منطقة السحب والإفلات لرفع ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON</sub>
+    </td>
+	  <td align="center">
+      <img src="screenshots/8.png" alt="الصفحة الرئيسية — منطقة الرفع" width="460"/><br/>
+      <sub><b>① الصفحة الرئيسية</b> — منطقة السحب والإفلات لرفع ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON</sub>
     </td>
     <td align="center">
       <img src="screenshots/2.png" alt="قائمة الملفات المحددة" width="460"/><br/>
@@ -149,7 +157,7 @@ http://127.0.0.1:5000
 ```
 
 ثم:
-1. اسحب ملفات PDF أو انقر لاختيارها (ملف واحد أو أكثر)
+1. اسحب ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON أو انقر لاختيارها (ملف واحد أو أكثر)
 2. اضغط **"ابدأ المعالجة"**
 3. تابع التقدم لحظياً وشاهد النتائج تظهر تباعاً
 
@@ -161,11 +169,11 @@ http://127.0.0.1:5000
 python docconv.py
 ```
 
-> يعالج ملف `document.pdf` الموجود في نفس المجلد ويطبع النتيجة في الطرفية.  
+> يعالج ملف `document.PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON` الموجود في نفس المجلد ويطبع النتيجة في الطرفية.  
 > يمكن تغيير مسار الملف عبر متغير البيئة:
 > ```bash
-> set OCR_SOURCE_PDF=C:\path\to\file.pdf   # Windows
-> export OCR_SOURCE_PDF=/path/to/file.pdf  # macOS/Linux
+> set OCR_SOURCE_PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON=C:\path\to\file.PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON   # Windows
+> export OCR_SOURCE_PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON=/path/to/file.PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON  # macOS/Linux
 > python docconv.py
 > ```
 
@@ -174,10 +182,10 @@ python docconv.py
 ### المعالجة الدفعية من سطر الأوامر
 
 ```bash
-python BatchPdfConv.py
+python BatchPDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSONConv.py
 ```
 
-> يعالج جميع ملفات PDF في مجلد `docs_import/` ويحفظ النتائج في `docs_exports/`.  
+> يعالج جميع ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON في مجلد `docs_import/` ويحفظ النتائج في `docs_exports/`.  
 > يتذكر الملفات المعالجة مسبقاً ولا يُعيد معالجتها.
 
 ---
@@ -189,14 +197,14 @@ Mistral-Arabic-OCR-test/
 │
 ├── app.py                  # تطبيق Flask الرئيسي (واجهة الويب)
 ├── docconv.py              # دوال OCR الأساسية + سكربت ملف واحد
-├── BatchPdfConv.py         # معالجة دفعية من سطر الأوامر
+├── BatchPDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSONConv.py         # معالجة دفعية من سطر الأوامر
 │
 ├── templates/
 │   └── index.html          # واجهة الويب (HTML + CSS + JS)
 │
 ├── screenshots/            # لقطات شاشة التطبيق
 │
-├── document.pdf            # ملف PDF تجريبي
+├── document.PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON            # ملف PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON تجريبي
 ├── .env                    # مفتاح API (أنشئه يدوياً، لا يُرفع لـ GitHub)
 ├── .gitignore
 └── README.md
@@ -235,9 +243,9 @@ flask --app app run --port 5001
 </details>
 
 <details>
-<summary><strong>❌ خطأ عند قراءة ملف PDF</strong></summary>
+<summary><strong>❌ خطأ عند قراءة ملف PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON</strong></summary>
 
-- تأكد أن الملف غير تالف ويمكن فتحه بأي قارئ PDF
+- تأكد أن الملف غير تالف ويمكن فتحه بأي قارئ PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON
 - تأكد أن حجم الملف لا يتجاوز 50 MB للملف الواحد
 </details>
 
