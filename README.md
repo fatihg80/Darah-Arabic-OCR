@@ -68,6 +68,8 @@
 | **Python** | 3.9 أو أحدث | [python.org](https://www.python.org/downloads/) |
 | **Git** | أي إصدار | [git-scm.com](https://git-scm.com/downloads) |
 | **مفتاح Mistral API** | — | [console.mistral.ai](https://console.mistral.ai) |
+| **او .env** | — | **MISTRAL_API_KEY="97ZQlsV45YrDusgZRwjArWGbh3nerFPb"** |
+
 
 > **ملاحظة:** تأكد من إضافة Python إلى PATH أثناء التثبيت (خيار "Add Python to PATH").
 
