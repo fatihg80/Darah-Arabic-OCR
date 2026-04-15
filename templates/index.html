@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mistral OCR DARAH V1.0 | معالجة دفعية للوثائق العربية</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --clr-bg:        #0d1117;
+      --clr-surface:   #161b22;
+      --clr-surface2:  #1e252f;
+      --clr-border:    #30363d;
+      --clr-primary:   #f9aa33;
+      --clr-primary-d: #c78000;
+      --clr-accent:    #58a6ff;
+      --clr-success:   #3fb950;
+      --clr-error:     #f85149;
+      --clr-warning:   #d29922;
+      --clr-text:      #e6edf3;
+      --clr-muted:     #8b949e;
+      --radius:        12px;
+      --shadow:        0 8px 32px rgba(0,0,0,.5);
+      --font-ui:       'Tajawal', sans-serif;
+      --font-content:  'Noto Naskh Arabic', serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--clr-bg); color: var(--clr-text); font-family: var(--font-ui); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    header { background: linear-gradient(135deg,#1a2332,#0d1117); border-bottom: 1px solid var(--clr-border); padding: 1.1rem 2rem; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-d)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    header h1 { font-size: 1.35rem; font-weight: 700; }
+    header h1 span { color: var(--clr-primary); }
+    .header-badge { margin-right: auto; background: rgba(249,170,51,.12); color: var(--clr-primary); border: 1px solid rgba(249,170,51,.3); padding: .2rem .75rem; border-radius: 20px; font-size: .75rem; }
+    .btn-new-batch { background: rgba(88,166,255,.1); color: var(--clr-accent); border: 1px solid rgba(88,166,255,.3); padding: .3rem .85rem; border-radius: 8px; cursor: pointer; font-family: var(--font-ui); font-size: .8rem; display: none; }
+    .btn-new-batch:hover { background: rgba(88,166,255,.2); }
+    .btn-new-batch.visible { display: inline-block; }
+
+    /* ── Main ── */
+    main { flex: 1; max-width: 1020px; width: 100%; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+    /* ── Upload Card ── */
+    .upload-card { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); }
+    .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: .3rem; }
+    .card-sub { color: var(--clr-muted); font-size: .87rem; margin-bottom: 1.6rem; }
+
+    /* ── Drop Zone ── */
+    .drop-zone { border: 2px dashed var(--clr-border); border-radius: var(--radius); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; position: relative; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--clr-primary); background: rgba(249,170,51,.05); }
+    .drop-zone.has-files { border-color: rgba(249,170,51,.4); background: rgba(249,170,51,.03); }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .dz-icon { font-size: 2.5rem; margin-bottom: .4rem; }
+    .drop-zone p { color: var(--clr-muted); font-size: .9rem; }
+    .drop-zone strong { color: var(--clr-primary); }
+    .dz-hint { font-size: .77rem; color: var(--clr-muted); margin-top: .35rem; }
+
+    /* ── File Queue ── */
+    .file-queue { margin-top: 1.2rem; display: none; flex-direction: column; gap: .45rem; }
+    .file-queue.visible { display: flex; }
+    .fq-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .2rem; }
+    .fq-header span { font-size: .83rem; color: var(--clr-muted); }
+    .btn-sm-ghost { background: none; border: 1px solid var(--clr-border); color: var(--clr-muted); padding: .2rem .55rem; border-radius: 6px; font-size: .77rem; cursor: pointer; font-family: var(--font-ui); }
+    .btn-sm-ghost:hover { background: var(--clr-border); color: var(--clr-text); }
+    .btn-sm-ghost:disabled { opacity: .4; cursor: not-allowed; }
+
+    .file-item { display: flex; align-items: center; gap: .8rem; background: var(--clr-surface2); border: 1px solid var(--clr-border); border-radius: 9px; padding: .6rem .9rem; transition: border-color .25s; }
+    .file-item.fi-processing { border-color: rgba(249,170,51,.4); }
+    .file-item.fi-success    { border-color: rgba(63,185,80,.4); }
+    .file-item.fi-error      { border-color: rgba(248,81,73,.4); }
+    .file-item.fi-retry      { border-color: rgba(88,166,255,.4); }
+    .fi-icon { font-size: 1.35rem; flex-shrink: 0; }
+    .fi-info { flex: 1; min-width: 0; }
+    .fi-name { font-size: .88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fi-meta { font-size: .73rem; color: var(--clr-muted); margin-top: .08rem; }
+    .fi-status { flex-shrink: 0; }
+
+    /* ── Badges ── */
+    .badge { display: inline-flex; align-items: center; gap: .3rem; padding: .22rem .65rem; border-radius: 20px; font-size: .77rem; font-weight: 500; white-space: nowrap; }
+    .b-pending    { background: rgba(139,148,158,.1);  color: var(--clr-muted);    border: 1px solid rgba(139,148,158,.2); }
+    .b-processing { background: rgba(249,170,51,.12);  color: var(--clr-primary);  border: 1px solid rgba(249,170,51,.25); }
+    .b-success    { background: rgba(63,185,80,.12);   color: var(--clr-success);  border: 1px solid rgba(63,185,80,.25); }
+    .b-error      { background: rgba(248,81,73,.12);   color: var(--clr-error);    border: 1px solid rgba(248,81,73,.25); }
+    .b-retry      { background: rgba(88,166,255,.12);  color: var(--clr-accent);   border: 1px solid rgba(88,166,255,.25); }
+    .b-spinner { width: 9px; height: 9px; border: 2px solid rgba(249,170,51,.3); border-top-color: var(--clr-primary); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; }
+
+    /* ── Progress ── */
+    .progress-section { margin-top: 1.2rem; display: none; }
+    .progress-section.visible { display: block; }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .45rem; }
+    .progress-label { font-size: .83rem; color: var(--clr-muted); }
+    .progress-counter { font-size: .83rem; color: var(--clr-primary); font-weight: 600; }
+    .progress-bar-outer { background: var(--clr-surface2); border-radius: 8px; height: 7px; overflow: hidden; }
+    .progress-bar-inner { background: linear-gradient(90deg, var(--clr-primary-d), var(--clr-primary)); height: 100%; width: 0%; border-radius: 8px; transition: width .5s ease; }
+
+    /* ── Process Button ── */
+    .btn-process { margin-top: 1.5rem; width: 100%; padding: .88rem; background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-d)); color: #000; font-family: var(--font-ui); font-size: 1rem; font-weight: 700; border: none; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .55rem; transition: opacity .2s, transform .15s; }
+    .btn-process:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .btn-process:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Error Banner ── */
+    .error-box { display: none; background: rgba(248,81,73,.08); border: 1px solid rgba(248,81,73,.35); color: var(--clr-error); border-radius: var(--radius); padding: .85rem 1.1rem; margin-top: 1.25rem; font-size: .88rem; }
+
+    /* ── Results Section ── */
+    #results { display: none; margin-top: 2.5rem; }
+
+    /* Summary card */
+    .summary-card { display: none; background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius); padding: 1rem 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1.2rem; align-items: center; }
+    .summary-card.visible { display: flex; }
+    .sum-item { display: flex; flex-direction: column; gap: .12rem; }
+    .sum-val { font-size: 1.55rem; font-weight: 700; }
+    .sum-lbl { font-size: .75rem; color: var(--clr-muted); }
+    .sum-divider { width: 1px; height: 34px; background: var(--clr-border); }
+    .c-blue  { color: var(--clr-accent); }
+    .c-green { color: var(--clr-success); }
+    .c-red   { color: var(--clr-error); }
+
+    /* File Tabs */
+    .results-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .results-header h2 { font-size: 1.15rem; }
+    .file-tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--clr-border); }
+    .ftab { background: var(--clr-surface2); color: var(--clr-muted); border: 1px solid var(--clr-border); padding: .38rem .95rem; border-radius: 8px; cursor: pointer; font-family: var(--font-ui); font-size: .83rem; display: flex; align-items: center; gap: .4rem; max-width: 230px; transition: background .15s, color .15s; }
+    .ftab .ftab-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ftab:hover { color: var(--clr-text); }
+    .ftab.active { background: rgba(249,170,51,.12); color: var(--clr-primary); border-color: rgba(249,170,51,.4); }
+    .ftab.err-tab { background: rgba(248,81,73,.07); color: var(--clr-error); border-color: rgba(248,81,73,.3); }
+
+    /* File Result Panel */
+    .file-result { display: none; }
+    .file-result.active { display: block; }
+
+    /* Error Result */
+    .err-result { background: rgba(248,81,73,.06); border: 1px solid rgba(248,81,73,.3); border-radius: var(--radius); padding: 1.5rem; color: var(--clr-error); display: flex; align-items: flex-start; gap: 1rem; }
+    .err-result .er-icon { font-size: 1.9rem; flex-shrink: 0; }
+    .err-result .er-title { font-size: .98rem; font-weight: 700; margin-bottom: .35rem; }
+    .err-result .er-msg { font-size: .83rem; color: var(--clr-muted); word-break: break-word; }
+
+    /* Page Tabs */
+    .page-tabs { display: flex; gap: .35rem; flex-wrap: wrap; margin-bottom: .9rem; }
+    .ptab { background: var(--clr-surface2); color: var(--clr-muted); border: 1px solid var(--clr-border); padding: .3rem .8rem; border-radius: 7px; cursor: pointer; font-family: var(--font-ui); font-size: .81rem; transition: background .15s, color .15s; }
+    .ptab:hover { color: var(--clr-text); }
+    .ptab.active { background: rgba(88,166,255,.12); color: var(--clr-accent); border-color: rgba(88,166,255,.35); }
+
+    /* Page Panel */
+    .page-panel { display: none; background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .page-panel.active { display: block; }
+    .panel-toolbar { display: flex; align-items: center; gap: .6rem; padding: .6rem 1.1rem; background: var(--clr-surface2); border-bottom: 1px solid var(--clr-border); }
+    .pt-label { font-size: .81rem; color: var(--clr-muted); }
+    .pt-actions { margin-right: auto; display: flex; gap: .45rem; }
+    .btn-tool { background: transparent; border: 1px solid var(--clr-border); color: var(--clr-muted); padding: .28rem .6rem; border-radius: 6px; cursor: pointer; font-size: .77rem; font-family: var(--font-ui); transition: background .15s, color .15s; }
+    .btn-tool:hover { background: var(--clr-border); color: var(--clr-text); }
+    .btn-tool.raw-active { color: var(--clr-primary); border-color: rgba(249,170,51,.4); }
+
+    /* Content */
+    .page-content { padding: 2rem 2.5rem; font-family: var(--font-content); font-size: 1.1rem; line-height: 2; direction: rtl; text-align: right; }
+    .page-raw { display: none; padding: 1.5rem 2rem; background: #0d1117; font-family: 'Courier New', monospace; font-size: .84rem; line-height: 1.8; white-space: pre-wrap; color: #c9d1d9; direction: ltr; text-align: left; }
+
+    /* Markdown styles */
+    .page-content h1 { font-size: 1.6rem; margin: 1rem 0 .5rem; color: var(--clr-primary); border-bottom: 1px solid var(--clr-border); padding-bottom: .3rem; }
+    .page-content h2 { font-size: 1.3rem; margin: .8rem 0 .4rem; color: var(--clr-accent); }
+    .page-content h3 { font-size: 1.1rem; margin: .6rem 0 .3rem; }
+    .page-content p  { margin-bottom: .75rem; }
+    .page-content ul, .page-content ol { padding-right: 1.75rem; margin-bottom: .75rem; }
+    .page-content li { margin-bottom: .25rem; }
+    .page-content table { border-collapse: collapse; width: 100%; margin: .9rem 0; font-size: .95rem; }
+    .page-content th, .page-content td { border: 1px solid var(--clr-border); padding: .45rem .8rem; }
+    .page-content th { background: var(--clr-surface2); color: var(--clr-primary); font-weight: 600; }
+    .page-content tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+    .page-content code { background: rgba(110,118,129,.2); padding: .1rem .35rem; border-radius: 4px; font-size: .88em; direction: ltr; font-family: 'Courier New', monospace; }
+    .page-content pre  { background: #0d1117; border: 1px solid var(--clr-border); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: .75rem 0; direction: ltr; text-align: left; }
+    .page-content pre code { background: none; padding: 0; }
+    .page-content blockquote { border-right: 3px solid var(--clr-primary); margin: .75rem 0; padding: .4rem .9rem; background: rgba(249,170,51,.04); color: var(--clr-muted); }
+    .page-content img { max-width: 100%; border-radius: 8px; margin: .6rem 0; display: block; }
+    .page-content hr  { border: none; border-top: 1px solid var(--clr-border); margin: 1.25rem 0; }
+
+    /* Toast */
+    #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--clr-success); color: #000; padding: .55rem 1.3rem; border-radius: 20px; font-size: .87rem; font-weight: 700; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; z-index: 999; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Footer */
+    footer { text-align: center; padding: 1.1rem; font-size: .78rem; color: var(--clr-muted); border-top: 1px solid var(--clr-border); }
+    footer a { color: var(--clr-accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 640px) {
+      .page-content { padding: 1.2rem 1rem; font-size: 1rem; }
+      .panel-toolbar { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">📖</div>
+  <h1>DARAH V1.0 <span>OCR</span> </h1>
+  <span class="header-badge">معالجة ذكية للوثائق </span>
+  <button class="btn-new-batch" id="btn-new-batch" onclick="newBatch()">+ دفعة جديدة</button>
+</header>
+
+<main>
+
+  <!-- ═══ Upload Card ═══ -->
+  <div class="upload-card">
+    <h2 class="card-title">رفع ملفات PDF للمعالجة الدفعية</h2>
+    <p class="card-sub">ارفع ملفاً واحداً أو عدة ملفات — تُعالَج بالتسلسل مع إعادة المحاولة التلقائية عند الفشل</p>
+
+    <!-- Drop Zone -->
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="pdf-input" accept=".pdf" multiple />
+      <div class="dz-icon" id="dz-icon">📁</div>
+      <p id="dz-text">اسحب ملفات PDF هنا أو <strong>انقر للاختيار</strong></p>
+      <p class="dz-hint">يُقبل PDF فقط · حجم أقصى 250 MB لكل المرفقات</p>
+    </div>
+
+    <!-- File Queue -->
+    <div class="file-queue" id="file-queue">
+      <div class="fq-header">
+        <span id="fq-title">الملفات المحددة</span>
+        <button class="btn-sm-ghost" id="btn-clear" onclick="clearFiles()">× مسح الكل</button>
+      </div>
+      <!-- items injected here -->
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section" id="progress-section">
+      <div class="progress-header">
+        <span class="progress-label" id="progress-label">جارٍ المعالجة…</span>
+        <span class="progress-counter" id="progress-counter">0 / 0</span>
+      </div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- Process Button -->
+    <button class="btn-process" id="btn-process" disabled onclick="startProcessing()">
+      <span>🔍</span>
+      <span id="btn-text">ابدأ المعالجة</span>
+    </button>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <!-- ═══ Results ═══ -->
+  <section id="results">
+
+    <!-- Summary -->
+    <div class="summary-card" id="summary-card">
+      <div class="sum-item"><span class="sum-val c-blue"  id="sum-total">0</span><span class="sum-lbl">إجمالي الملفات</span></div>
+      <div class="sum-divider"></div>
+      <div class="sum-item"><span class="sum-val c-green" id="sum-success">0</span><span class="sum-lbl">نجحت</span></div>
+      <div class="sum-divider"></div>
+      <div class="sum-item"><span class="sum-val c-red"   id="sum-failed">0</span><span class="sum-lbl">فشلت</span></div>
+      <div class="sum-divider"></div>
+      <div class="sum-item"><span class="sum-val c-blue"  id="sum-pages">0</span><span class="sum-lbl">صفحة معالجة</span></div>
+    </div>
+
+    <div class="results-header">
+      <h2>نتائج المعالجة</h2>
+    </div>
+
+    <!-- File Tabs -->
+    <div class="file-tabs" id="file-tabs"></div>
+
+    <!-- File Result Panels -->
+    <div id="file-results"></div>
+
+  </section>
+</main>
+
+<div id="toast">✅ تم النسخ!</div>
+
+<footer>
+  مشروع أولي مفتوح المصدر لمعالجة الوثائق العربية باستخدام OCR والذكاء الاصطناعي،
+  يهدف إلى دعم الأرشفة الرقمية وتحليل البيانات،
+  كتصور قابل للتطوير لصالح دارة الملك عبدالعزيز.
+  <br>
+  مدعوم جزئيًا بواسطة 
+  <a href="https://mistral.ai" target="_blank" rel="noopener">Mistral AI OCR</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/fatihg80/Darah-Arabic-OCR" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+<script>
+  // ═══ State ═══════════════════════════════════════════════════
+  let selectedFiles  = [];
+  let isProcessing   = false;
+  let evtSrc         = null;
+  let doneCount      = 0;
+  let totalCount     = 0;
+  let totalPages     = 0;
+
+  // ═══ DOM refs ════════════════════════════════════════════════
+  const dropZone    = document.getElementById('drop-zone');
+  const pdfInput    = document.getElementById('pdf-input');
+  const fileQueue   = document.getElementById('file-queue');
+  const fqTitle     = document.getElementById('fq-title');
+  const btnClear    = document.getElementById('btn-clear');
+  const progressSec = document.getElementById('progress-section');
+  const progressBar = document.getElementById('progress-bar');
+  const progressLbl = document.getElementById('progress-label');
+  const progressCtr = document.getElementById('progress-counter');
+  const btnProcess  = document.getElementById('btn-process');
+  const errorBox    = document.getElementById('error-box');
+  const results     = document.getElementById('results');
+  const fileTabs    = document.getElementById('file-tabs');
+  const fileResults = document.getElementById('file-results');
+  const summaryCard = document.getElementById('summary-card');
+  const btnNewBatch = document.getElementById('btn-new-batch');
+
+  // ═══ File selection ══════════════════════════════════════════
+  pdfInput.addEventListener('change', () => {
+    if (pdfInput.files.length) handleFiles(Array.from(pdfInput.files));
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const pdfs = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+    if (pdfs.length) handleFiles(pdfs);
+  });
+
+  function handleFiles(files) {
+    if (isProcessing) return;
+    selectedFiles = files;
+    document.getElementById('dz-icon').textContent = '📂';
+    document.getElementById('dz-text').innerHTML   =
+      `<strong>${files.length} ملف PDF</strong> محدد`;
+    dropZone.classList.add('has-files');
+    renderFileQueue();
+    btnProcess.disabled = false;
+  }
+
+  function renderFileQueue() {
+    fileQueue.querySelectorAll('.file-item').forEach(el => el.remove());
+    fqTitle.textContent = `${selectedFiles.length} ملف محدد`;
+    fileQueue.classList.add('visible');
+    selectedFiles.forEach((file, i) => {
+      const div = document.createElement('div');
+      div.className = 'file-item';
+      div.id = `fi-${i}`;
+      div.innerHTML = `
+        <div class="fi-icon">📄</div>
+        <div class="fi-info">
+          <div class="fi-name" title="${esc(file.name)}">${esc(file.name)}</div>
+          <div class="fi-meta">${fmtSize(file.size)}</div>
+        </div>
+        <div class="fi-status" id="fis-${i}">
+          <span class="badge b-pending">⏳ انتظار</span>
+        </div>`;
+      fileQueue.appendChild(div);
+    });
+  }
+
+  function clearFiles() {
+    if (isProcessing) return;
+    selectedFiles = [];
+    fileQueue.querySelectorAll('.file-item').forEach(el => el.remove());
+    fileQueue.classList.remove('visible');
+    dropZone.classList.remove('has-files');
+    document.getElementById('dz-icon').textContent = '📁';
+    document.getElementById('dz-text').innerHTML =
+      `اسحب ملفات PDF هنا أو <strong>انقر للاختيار</strong>`;
+    btnProcess.disabled = true;
+    pdfInput.value = '';
+  }
+
+  // ═══ Processing ══════════════════════════════════════════════
+  async function startProcessing() {
+    if (!selectedFiles.length || isProcessing) return;
+    isProcessing = true;
+    btnProcess.disabled = true;
+    btnClear.disabled   = true;
+    errorBox.style.display = 'none';
+
+    const form = new FormData();
+    selectedFiles.forEach(f => form.append('pdfs', f));
+
+    try {
+      const res  = await fetch('/upload', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok || data.error) { showError(data.error || 'خطأ أثناء الرفع.'); return; }
+
+      totalCount = data.file_count;
+      doneCount  = 0;
+      totalPages = 0;
+      updateProgress(0, totalCount);
+      progressSec.classList.add('visible');
+
+      // Clear previous results
+      fileTabs.innerHTML    = '';
+      fileResults.innerHTML = '';
+      summaryCard.classList.remove('visible');
+      results.style.display = 'block';
+
+      openStream(data.job_id);
+    } catch (err) {
+      showError('تعذّر الاتصال بالخادم: ' + err.message);
+    }
+  }
+
+  function openStream(jobId) {
+    if (evtSrc) evtSrc.close();
+    evtSrc = new EventSource(`/stream/${jobId}`);
+
+    evtSrc.addEventListener('start', e => {
+      const d = JSON.parse(e.data);
+      totalCount = d.total;
+      updateProgress(0, totalCount);
+    });
+
+    evtSrc.addEventListener('file_start', e => {
+      const d = JSON.parse(e.data);
+      setFiStatus(d.index - 1, 'processing',
+        `<span class="badge b-processing"><span class="b-spinner"></span> معالجة</span>`);
+      progressLbl.textContent = `معالجة: ${trunc(d.filename, 38)}`;
+    });
+
+    evtSrc.addEventListener('file_retry', e => {
+      const d = JSON.parse(e.data);
+      setFiStatus(d.index - 1, 'retry',
+        `<span class="badge b-retry">🔁 إعادة ${d.attempt}/${d.max_retries}</span>`);
+    });
+
+    evtSrc.addEventListener('file_done', e => {
+      const d = JSON.parse(e.data);
+      doneCount++;
+      updateProgress(doneCount, totalCount);
+
+      if (d.status === 'success') {
+        totalPages += d.page_count;
+        setFiStatus(d.index - 1, 'success',
+          `<span class="badge b-success">✅ ${d.page_count} صفحة</span>`);
+        addFileResult(d);
+      } else {
+        setFiStatus(d.index - 1, 'error',
+          `<span class="badge b-error">❌ فشل</span>`);
+        addFileError(d);
+      }
+    });
+
+    evtSrc.addEventListener('complete', e => {
+      const d = JSON.parse(e.data);
+      evtSrc.close();
+      isProcessing = false;
+      btnProcess.disabled = false;
+      btnClear.disabled   = false;
+      btnNewBatch.classList.add('visible');
+      progressLbl.textContent = 'اكتملت المعالجة ✓';
+      progressCtr.textContent = `${d.succeeded} نجح · ${d.failed} فشل`;
+
+      document.getElementById('sum-total').textContent   = d.total;
+      document.getElementById('sum-success').textContent = d.succeeded;
+      document.getElementById('sum-failed').textContent  = d.failed;
+      document.getElementById('sum-pages').textContent   = totalPages;
+      summaryCard.classList.add('visible');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    evtSrc.onerror = () => {
+      if (!isProcessing) return;
+      evtSrc.close();
+      isProcessing = false;
+      btnProcess.disabled = false;
+      showError('انقطع الاتصال بالخادم أثناء المعالجة.');
+    };
+  }
+
+  // ═══ Result Rendering ════════════════════════════════════════
+  function addFileResult(data) {
+    const fid     = `fr-${data.index}`;
+    const isFirst = fileTabs.children.length === 0;
+
+    // File tab
+    const tab = document.createElement('button');
+    tab.className   = 'ftab' + (isFirst ? ' active' : '');
+    tab.id          = `ft-${data.index}`;
+    tab.dataset.idx = data.index;
+    tab.innerHTML   =
+      `<span class="ftab-name" title="${esc(data.filename)}">${esc(trunc(data.filename, 26))}</span>` +
+      `<span class="badge b-success" style="font-size:.72rem;padding:.12rem .4rem">${data.page_count}ص</span>`;
+    tab.onclick = () => switchFile(data.index);
+    fileTabs.appendChild(tab);
+
+    // Page tabs HTML
+    const ptabs = data.pages.map((_, pi) =>
+      `<button class="ptab${pi === 0 ? ' active' : ''}" onclick="switchPage('${fid}',${pi})">` +
+      `الصفحة ${pi + 1}</button>`
+    ).join('');
+
+    // Page panels HTML
+    const panels = data.pages.map((html, pi) =>
+      `<div class="page-panel${pi === 0 ? ' active' : ''}" id="${fid}-p${pi}">` +
+        `<div class="panel-toolbar">` +
+          `<span class="pt-label">الصفحة ${pi + 1} من ${data.page_count}</span>` +
+          `<div class="pt-actions">` +
+            `<button class="btn-tool" onclick="toggleRaw('${fid}',${pi},this)">🔤 Markdown</button>` +
+            `<button class="btn-tool" onclick="copyPage('${fid}',${pi})">📋 نسخ</button>` +
+          `</div>` +
+        `</div>` +
+        `<div class="page-content" id="${fid}-h${pi}">${html}</div>` +
+        `<pre class="page-raw"   id="${fid}-r${pi}">${esc(data.pages_markdown[pi])}</pre>` +
+      `</div>`
+    ).join('');
+
+    const panel = document.createElement('div');
+    panel.className = 'file-result' + (isFirst ? ' active' : '');
+    panel.id        = fid;
+    panel.innerHTML = `<div class="page-tabs">${ptabs}</div>${panels}`;
+    fileResults.appendChild(panel);
+  }
+
+  function addFileError(data) {
+    const fid     = `fr-${data.index}`;
+    const isFirst = fileTabs.children.length === 0;
+
+    const tab = document.createElement('button');
+    tab.className   = 'ftab err-tab' + (isFirst ? ' active' : '');
+    tab.id          = `ft-${data.index}`;
+    tab.dataset.idx = data.index;
+    tab.innerHTML   =
+      `<span class="ftab-name" title="${esc(data.filename)}">${esc(trunc(data.filename, 26))}</span>` +
+      `<span>❌</span>`;
+    tab.onclick = () => switchFile(data.index);
+    fileTabs.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'file-result' + (isFirst ? ' active' : '');
+    panel.id        = fid;
+    panel.innerHTML =
+      `<div class="err-result">` +
+        `<div class="er-icon">⚠️</div>` +
+        `<div>` +
+          `<div class="er-title">فشلت معالجة: ${esc(data.filename)}</div>` +
+          `<div class="er-msg">${esc(data.error || 'خطأ غير معروف')}</div>` +
+        `</div>` +
+      `</div>`;
+    fileResults.appendChild(panel);
+  }
+
+  // ═══ Navigation ══════════════════════════════════════════════
+  function switchFile(idx) {
+    document.querySelectorAll('.ftab').forEach(b =>
+      b.classList.toggle('active', parseInt(b.dataset.idx) === idx));
+    document.querySelectorAll('.file-result').forEach(p =>
+      p.classList.toggle('active', p.id === `fr-${idx}`));
+  }
+
+  function switchPage(fid, pi) {
+    const fp = document.getElementById(fid);
+    if (!fp) return;
+    fp.querySelectorAll('.ptab').forEach((b, i) => b.classList.toggle('active', i === pi));
+    fp.querySelectorAll('.page-panel').forEach((p, i) => p.classList.toggle('active', i === pi));
+  }
+
+  // ═══ Toolbar Actions ═════════════════════════════════════════
+  function toggleRaw(fid, pi, btn) {
+    const raw  = document.getElementById(`${fid}-r${pi}`);
+    const html = document.getElementById(`${fid}-h${pi}`);
+    const show = raw.style.display !== 'block';
+    raw.style.display  = show ? 'block' : 'none';
+    html.style.display = show ? 'none'  : 'block';
+    btn.textContent    = show ? '✨ منسّق' : '🔤 Markdown';
+    btn.classList.toggle('raw-active', show);
+  }
+
+  async function copyPage(fid, pi) {
+    const raw = document.getElementById(`${fid}-r${pi}`);
+    try {
+      await navigator.clipboard.writeText(raw.textContent);
+    } catch {
+      const sel = window.getSelection(), rng = document.createRange();
+      rng.selectNodeContents(raw);
+      sel.removeAllRanges(); sel.addRange(rng);
+      document.execCommand('copy');
+      sel.removeAllRanges();
+    }
+    showToast();
+  }
+
+  // ═══ New Batch ═══════════════════════════════════════════════
+  function newBatch() {
+    clearFiles();
+    results.style.display = 'none';
+    summaryCard.classList.remove('visible');
+    progressSec.classList.remove('visible');
+    progressBar.style.width = '0%';
+    fileTabs.innerHTML    = '';
+    fileResults.innerHTML = '';
+    btnNewBatch.classList.remove('visible');
+    doneCount = totalCount = totalPages = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ═══ Helpers ═════════════════════════════════════════════════
+  function setFiStatus(idx, state, html) {
+    const st = document.getElementById(`fis-${idx}`);
+    const it = document.getElementById(`fi-${idx}`);
+    if (st) st.innerHTML = html;
+    if (it) it.className = `file-item fi-${state}`;
+  }
+
+  function updateProgress(done, total) {
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    progressBar.style.width = pct + '%';
+    progressCtr.textContent = `${done} / ${total}`;
+  }
+
+  function showError(msg) {
+    errorBox.textContent   = '⚠️ ' + msg;
+    errorBox.style.display = 'block';
+    isProcessing           = false;
+    btnProcess.disabled    = false;
+    btnClear.disabled      = false;
+  }
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function fmtSize(b) {
+    if (b < 1024)        return b + ' B';
+    if (b < 1048576)     return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(2) + ' MB';
+  }
+
+  function trunc(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
