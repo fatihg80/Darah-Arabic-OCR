@@ -193,7 +193,7 @@ python BatchPDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSONConv.py
 ## 📁 هيكل المشروع
 
 ```
-Mistral-Arabic-OCR-test/
+Darah-Arabic-OCR/
 │
 ├── app.py                  # تطبيق Flask الرئيسي (واجهة الويب)
 ├── docconv.py              # دوال OCR الأساسية + سكربت ملف واحد
