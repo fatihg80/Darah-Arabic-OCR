@@ -1,6 +1,6 @@
-# 📖 Mistral OCR DARAH V1.0 — معالج الوثائق العربية
+# 📖 Mistral OCR Mistral V1.0 — معالج الوثائق العربية
 
-> **Mistral OCR DARAH V1.0** نظام ويب متكامل لاستخراج النصوص من ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON باستخدام تقنية الذكاء الاصطناعي **Mistral OCR AI**.  
+> **Mistral OCR Mistral V1.0** نظام ويب متكامل لاستخراج النصوص من ملفات PDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSON باستخدام تقنية الذكاء الاصطناعي **Mistral OCR AI**.  
 > يتميّز بواجهة عربية احترافية تدعم **المعالجة الدفعية** لعدد غير محدود من الملفات مع عرض النتائج فورياً في المتصفح دون الحاجة لأي برنامج خارجي.
 
 ### حول النظام
@@ -88,8 +88,8 @@
 ### الخطوة 1 — استنساخ المشروع
 
 ```bash
-git clone https://github.com/fatihg80/Darah-Arabic-OCR.git
-cd Darah-Arabic-OCR
+git clone https://github.com/fatihg80/Mistral-Arabic-OCR.git
+cd Mistral-Arabic-OCR
 ```
 
 ---
@@ -193,7 +193,7 @@ python BatchPDF,JPG,JPEG,PNG,WEBP,TIFF,TIF,.BMP,GIF,DOCX,.XLSX,PPTX,JSONConv.py
 ## 📁 هيكل المشروع
 
 ```
-Darah-Arabic-OCR/
+Mistral-Arabic-OCR/
 │
 ├── app.py                  # تطبيق Flask الرئيسي (واجهة الويب)
 ├── docconv.py              # دوال OCR الأساسية + سكربت ملف واحد
